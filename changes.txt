@@ -1,0 +1,15 @@
+v1: 
+added self.qubitCircLeadSizes =  ([2, 20], [10, 100])
+      self.qubitCircRadius = 200
+as new parameters to the default config class.
+
+edited def qubitLead():
+
+now has a new argument: isCirc. If true, the qubit will be drawn with circular pads, whos radius is specified in self.qubitCircRadius
+One thing to look out far is the overlap between the coarseLead and the Circle. 
+Currently, the generic value
+	self.qubitLeadOverlap =       1.5   
+is used.
+
+
+added snake Resonator.
