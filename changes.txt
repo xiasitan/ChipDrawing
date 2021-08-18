@@ -10,6 +10,12 @@ One thing to look out far is the overlap between the coarseLead and the Circle.
 Currently, the generic value
 	self.qubitLeadOverlap =       1.5   
 is used.
-
-
 added snake Resonator.
+
+v1.1: 
+changes in the individual pythonfiles. 
+Pengtao request the boarder for the fine Lead and corse Lead of the qubit to be in a different Layer. For this,
+I adjusted the code. 
+First, the boarder of the merged Leads is created to be used as a mask. Then, I create the boarder for both the coarse Lead and fine Lead individually.
+Finally, I use the created mask for an and operation on the indiviudall borders.
+Also, the createboarder function was adjusted to allow picking a layer. Previously, all borders were in the same layer.
