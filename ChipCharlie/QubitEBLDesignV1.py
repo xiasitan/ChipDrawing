@@ -260,38 +260,3 @@ def bridgeFreeJJ(conf: DefaultConfig):
     for i in range(3):
         rectangles.append(copy(rectangles[i]).rotate(pi))
     return rectangles
-
-def snake(conf: DefaultConfig, direction = True):
-    SnakeHead = gdspy.Round([0,0],conf.snakeRadius, layer = conf.snakeLayer)
-    SnakeBody = gdspy.Path(conf.snakeThickness, (0, 0))
-    # create the neck, first turn and first horizontal line element
-    if direction:
-        SnakeBody.segment(conf.snakeNeck, "+y")
-    else:
-        SnakeBody.segment(conf.snakeNeck, "-y")
-        
-    SnakeBody.turn(conf.snakeCenTurnRad,"r")
-    SnakeBody.segment(conf.snakeHorLineLen/2-conf.snakeCenTurnRad)
-    
-    # create as many full hooks as specified in conf0 plus an additional final turn
-    if conf.snakeNumHooks%2 == 0: # if even
-        for i in range(math.ceil(conf.snakeNumHooks/2)):
-            SnakeBody.turn(conf.snakeCenTurnRad,"ll")
-            SnakeBody.segment(conf.snakeHorLineLen)
-            SnakeBody.turn(conf.snakeCenTurnRad,"rr")
-            SnakeBody.segment(conf.snakeHorLineLen)
-        SnakeBody.turn(conf.snakeCenTurnRad,"ll")
-    else: # if odd
-        SnakeBody.turn(conf.snakeCenTurnRad,"ll")
-        SnakeBody.segment(conf.snakeHorLineLen)
-        for i in range(math.ceil((conf.snakeNumHooks-1)/2)):
-            SnakeBody.turn(conf.snakeCenTurnRad,"rr")
-            SnakeBody.segment(conf.snakeHorLineLen)
-            SnakeBody.turn(conf.snakeCenTurnRad,"ll")    
-            SnakeBody.segment(conf.snakeHorLineLen)
-        SnakeBody.turn(conf.snakeCenTurnRad,"rr")        
-    # Final Horizontal line segment
-    SnakeBody.segment(conf.snakeFinHorLineLen)
-    
-    Snake = join([SnakeHead] + [SnakeBody])
-    return [Snake]

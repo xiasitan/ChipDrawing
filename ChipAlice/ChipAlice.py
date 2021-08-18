@@ -7,16 +7,37 @@ abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
 
-def qubit(conf: DefaultConfig, test, isCirc = False):
+def qubit(conf: DefaultConfig, test, isCirc = False, cLlayer = 6, fLlayer = 13 ):
     bridgeFreeJJ1 = bridgeFreeJJ(conf)
     size1 = getSize(bridgeFreeJJ1)
+    
     coarseLead1, fineLead1 = translate(qubitLead(conf, test, isCirc), 0, size1[1]/2)
     coarseLead2, fineLead2 = rotate(copy([coarseLead1, fineLead1]), pi, [0,0])
     discharger1 = [] if test else discharger(conf)
-    joinedLead = [join([coarseLead1, coarseLead2] + discharger1), fineLead1, fineLead2]
-    border = makeBorder(conf, joinedLead)
-    border = cut(border, myRectangle([size1[0]*10, size1[1]]))#.fillet(10, max_points=1000)
-    return bridgeFreeJJ1 + joinedLead + [border]
+    
+    # added some mmodifications to allow adjusting fineLead and CoarseLead border layer
+    # Create a mask of the joined coarselead + fine lead border to use for boolean and
+    _joinedLead = [join([coarseLead1, coarseLead2] + discharger1), fineLead1, fineLead2]
+    _border = makeBorder(conf, _joinedLead)
+    _border = cut(_border, myRectangle([size1[0]*10, size1[1]]))#.fillet(10, max_points=1000)
+    
+    joinedcoarseLead = [join([coarseLead1, coarseLead2] + discharger1)]
+    joinedfineLead = [fineLead1, fineLead2]
+    
+    # Create border for coarseLead (large rectangles and Pads)
+    bordercL = makeBorder(conf, joinedcoarseLead)
+    bordercL = cut(bordercL, myRectangle([size1[0]*10, size1[1]]))#.fillet(10, max_points=1000)
+    bordercL = gdspy.boolean(_border,bordercL,"and", layer= cLlayer)
+    
+    # Create border for fine lead
+    borderfL = makeBorder(conf,joinedfineLead)
+    borderfL = cut(borderfL, myRectangle([size1[0]*10, size1[1]]))#.fillet(10, max_points=1000)
+    borderfL = gdspy.boolean(_border,borderfL,"and", layer= fLlayer)
+    borderfL = gdspy.boolean(borderfL,bordercL,"not", layer= fLlayer)
+    
+    joinedLead = joinedcoarseLead + joinedfineLead
+    borders = [bordercL, borderfL]
+    return bridgeFreeJJ1 + joinedLead + borders
 
 def filledChip(conf: DefaultConfig, texts):
     verDist, horDist = conf.verticalDistances, conf.horizontalDistances
@@ -90,7 +111,7 @@ def filledWafer():
     # discharger
     conf0.dischargerRadius = 250
     conf0.dischargerWidth = 6
-    conf0.dischargerAngles = [pi/2, -pi/6 * 1.5]
+    conf0.dischargerAngles = [pi/2, -pi/2]
     # snake
     conf0.snakeNumHooks = 7
     conf0.snakeFinHorLineLen = 700
